@@ -1,0 +1,24 @@
+<?php
+
+/** Implements hook_query_TAG_alter().
+*
+* Alter comments query to order by DESC as well as the default ASC.
+*/
+function sortcomments_query_comment_filter_alter(Drupal\Core\Database\Query\AlterableInterface $query) {
+
+  $orderby = &$query->getOrderBy();
+
+  // Sorting for threaded comments.
+  if (isset($orderby['torder'])) {
+    // Sort by root parent first, then normal threaded.
+    $query->addExpression("SUBSTRING_INDEX(c.thread, '.', 1)", 'rparent');
+    $orderby = array('rparent' => 'DESC') + $orderby;
+  }
+  // Sorting for flat comments.
+  else if (isset($orderby['c.cid'])) {
+    $direction = 'DESC';
+
+    $orderby['c.cid'] = $direction;
+    $orderby = array('c.created' => $direction) + $orderby;
+  }
+}
