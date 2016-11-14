@@ -1,0 +1,4 @@
+name: Sort Comments
+description: Alter comments query to order by DESC as well as the default ASC.
+type: module
+core: 8.x
