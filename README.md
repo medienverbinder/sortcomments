@@ -9,7 +9,7 @@ Drupal 8.2.x database.api.php / Perform alterations to a structured query for a 
 
 => https://api.drupal.org/api/drupal/core%21lib%21Drupal%21Core%21Database%21database.api.php/function/hook_query_TAG_alter/8.2.x
 
-### Advanced (pseudo field) configuration
+### Advanced comment field configuration
 
 ![configuration](https://cloud.githubusercontent.com/assets/4519686/20665226/0a26cc4c-b55f-11e6-91ed-bfda8f208194.png)
 
