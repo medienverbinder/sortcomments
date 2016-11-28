@@ -1,24 +1,101 @@
 <?php
 
+use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Entity\EntityInterface;
+use Drupal\Core\Render\Element;
+use Drupal\Core\Form\FormState;
+use Drupal\comment\CommentInterface;
+use Drupal\field\Field;
+use Drupal\field\Entity\FieldConfig;
+
+
+define('SORTCOMMENTS_NEWER_FIRST', 2);
+
+
+/**
+ * Implements hook_form_FORM_ID_alter().
+ */
+function sortcomments_form_field_config_edit_form_alter(&$form, FormStateInterface $form_state, $form_id) {
+
+    $field = $form_state->getFormObject()->getEntity();
+
+    if ($field->getType() == 'comment') {
+        $form['field']['sortcomments']['sortcommentsvalue'] = [
+            '#type' => 'select',
+            '#title' => t('How to sort comments.'),
+            '#default_value' => $field->getThirdPartySetting('sortcomments', 'sortcommentsvalue', '1'),
+            '#options' => [
+                '1' => 'Oldest First (ASC)',
+                '2' => 'Newest First (DESC)'
+            ],
+        ];
+    }
+
+    $form['actions']['submit']['#submit'][] = 'sortcomments_form_field_config_edit_form_submit';
+
+    // Clearing cache to ensure that cache is removed if we select comment alter
+    // option for a field.
+    \Drupal::cache()->delete('sortcomments_fields:' . $entity_type[0] . ':' . $entity_type[1]);
+
+}
+
+
+/**
+ * Form submission handler for sortcomments_form_field_config_edit_form_alter.
+ *
+ * @param array $form
+ *   The form array.
+ * @param FormStateInterface $form_state
+ *   The form state.
+ */
+function sortcomments_form_field_config_edit_form_submit(array $form, FormStateInterface $form_state) {
+
+    $field = $form_state->getFormObject()->getEntity();
+    $form_fields = &$form_state->getValues();
+
+    // If the private option is checked, update settings.
+    if ($form_fields['sortcommentsvalue']) {
+
+        $field->setThirdPartySetting('sortcomments', 'sortcommentsvalue', $form_state->getValue('sortcommentsvalue'));
+        $field->save();
+    }
+    else {
+        $field->unsetThirdPartySetting('sortcomments', 'sortcommentsvalue');
+        $field->save();
+    }
+}
+
+
 /** Implements hook_query_TAG_alter().
-*
-* Alter comments query to order by DESC as well as the default ASC.
-*/
+ *
+ * Alter comments query to order by DESC as well as the default ASC.
+ */
 function sortcomments_query_comment_filter_alter(Drupal\Core\Database\Query\AlterableInterface $query) {
 
-  $orderby = &$query->getOrderBy();
+    $node = \Drupal::routeMatch()->getParameter('node');
+    $bundle = $node->bundle();
 
-  // Sorting for threaded comments.
-  if (isset($orderby['torder'])) {
-    // Sort by root parent first, then normal threaded.
-    $query->addExpression("SUBSTRING_INDEX(c.thread, '.', 1)", 'rparent');
-    $orderby = array('rparent' => 'DESC') + $orderby;
-  }
-  // Sorting for flat comments.
-  else if (isset($orderby['c.cid'])) {
-    $direction = 'DESC';
+    foreach($node as $field_name => $config) {
 
-    $orderby['c.cid'] = $direction;
-    $orderby = array('c.created' => $direction) + $orderby;
-  }
+        $field_storage = \Drupal\field\Entity\FieldConfig::loadByName('node',$bundle, $field_name);
+        if(!($field_storage == NULL))
+            if($field_storage->getType() == 'comment')
+                $sort = $field_storage->getThirdPartySetting('sortcomments', 'sortcommentsvalue');
+    }
+
+    if($sort == SORTCOMMENTS_NEWER_FIRST) {
+        $orderby = &$query->getOrderBy();
+        // Sorting for threaded comments.
+        if (isset($orderby['torder'])) {
+            // Sort by root parent first, then normal threaded.
+            $query->addExpression("SUBSTRING_INDEX(c.thread, '.', 1)", 'rparent');
+            $orderby = array('rparent' => 'DESC') + $orderby;
+        }
+        // Sorting for flat comments.
+        else if (isset($orderby['c.cid'])) {
+            $direction = 'DESC';
+            $orderby['c.cid'] = $direction;
+            $orderby = array('c.created' => $direction) + $orderby;
+        }
+    }
 }
