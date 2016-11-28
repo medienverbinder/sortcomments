@@ -8,9 +8,7 @@ use Drupal\comment\CommentInterface;
 use Drupal\field\Field;
 use Drupal\field\Entity\FieldConfig;
 
-
 define('SORTCOMMENTS_NEWER_FIRST', 2);
-
 
 /**
  * Implements hook_form_FORM_ID_alter().
@@ -33,10 +31,8 @@ function sortcomments_form_field_config_edit_form_alter(&$form, FormStateInterfa
 
     $form['actions']['submit']['#submit'][] = 'sortcomments_form_field_config_edit_form_submit';
 
-    // Clearing cache to ensure that cache is removed if we select comment alter
-    // option for a field.
+    // Clearing cache to ensure that cache is removed if we select comment alter option for a field.
     \Drupal::cache()->delete('sortcomments_fields:' . $entity_type[0] . ':' . $entity_type[1]);
-
 }
 
 
