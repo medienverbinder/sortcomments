@@ -31,8 +31,6 @@ function sortcomments_form_field_config_edit_form_alter(&$form, FormStateInterfa
 
     $form['actions']['submit']['#submit'][] = 'sortcomments_form_field_config_edit_form_submit';
 
-    // Clearing cache to ensure that cache is removed if we select comment alter option for a field.
-    \Drupal::cache()->delete('sortcomments_fields:' . $entity_type[0] . ':' . $entity_type[1]);
 }
 
 
@@ -69,29 +67,33 @@ function sortcomments_form_field_config_edit_form_submit(array $form, FormStateI
 function sortcomments_query_comment_filter_alter(Drupal\Core\Database\Query\AlterableInterface $query) {
 
     $node = \Drupal::routeMatch()->getParameter('node');
-    $bundle = $node->bundle();
 
-    foreach($node as $field_name => $config) {
+    if($node) {
 
-        $field_storage = \Drupal\field\Entity\FieldConfig::loadByName('node',$bundle, $field_name);
-        if(!($field_storage == NULL))
-            if($field_storage->getType() == 'comment')
-                $sort = $field_storage->getThirdPartySetting('sortcomments', 'sortcommentsvalue');
-    }
+        $bundle = $node->bundle();
 
-    if($sort == SORTCOMMENTS_NEWER_FIRST) {
-        $orderby = &$query->getOrderBy();
-        // Sorting for threaded comments.
-        if (isset($orderby['torder'])) {
-            // Sort by root parent first, then normal threaded.
-            $query->addExpression("SUBSTRING_INDEX(c.thread, '.', 1)", 'rparent');
-            $orderby = array('rparent' => 'DESC') + $orderby;
+        foreach($node as $field_name => $config) {
+
+            $field_storage = \Drupal\field\Entity\FieldConfig::loadByName('node',$bundle, $field_name);
+            if(!($field_storage == NULL))
+                if($field_storage->getType() == 'comment')
+                    $sort = $field_storage->getThirdPartySetting('sortcomments', 'sortcommentsvalue');
         }
-        // Sorting for flat comments.
-        else if (isset($orderby['c.cid'])) {
-            $direction = 'DESC';
-            $orderby['c.cid'] = $direction;
-            $orderby = array('c.created' => $direction) + $orderby;
+
+        if($sort == SORTCOMMENTS_NEWER_FIRST) {
+            $orderby = &$query->getOrderBy();
+            // Sorting for threaded comments.
+            if (isset($orderby['torder'])) {
+                // Sort by root parent first, then normal threaded.
+                $query->addExpression("SUBSTRING_INDEX(c.thread, '.', 1)", 'rparent');
+                $orderby = array('rparent' => 'DESC') + $orderby;
+            }
+            // Sorting for flat comments.
+            else if (isset($orderby['c.cid'])) {
+                $direction = 'DESC';
+                $orderby['c.cid'] = $direction;
+                $orderby = array('c.created' => $direction) + $orderby;
+            }
         }
     }
 }
