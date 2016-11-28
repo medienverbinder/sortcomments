@@ -1,5 +1,5 @@
 # sortcomments
-Example module to change the sort order of comments in Drupal 8 using function hook_query_TAG_alter
+Example module to change the sort order of comments in Drupal 8 using function hook_query_TAG_alter. This simple module provides sorting functionality for comments. It is possible to configure sort order (newer or older first) per comment field, using the "comment field configuration" in "manage fields and settings" for your content type.
 
 Corresponding issue for Drupal 7:
 
@@ -9,14 +9,17 @@ Drupal 8.2.x database.api.php / Perform alterations to a structured query for a 
 
 => https://api.drupal.org/api/drupal/core%21lib%21Drupal%21Core%21Database%21database.api.php/function/hook_query_TAG_alter/8.2.x
 
+### Advanced (pseudo field) configuration
 
-### Preview when the module is disabled/enabled
+![configuration](https://cloud.githubusercontent.com/assets/4519686/20665226/0a26cc4c-b55f-11e6-91ed-bfda8f208194.png)
+
+### Preview
 
 ##### preview sort flat
 
-![sort_flat](https://cloud.githubusercontent.com/assets/4519686/20262726/aea55376-aa63-11e6-9886-e009b518dde7.jpg)
+![sort_flat](https://cloud.githubusercontent.com/assets/4519686/20665220/04708428-b55f-11e6-8360-9a27e10fce12.jpg)
 
 ##### preview sort threaded
 
-![sort_threaded](https://cloud.githubusercontent.com/assets/4519686/20262758/d889f12e-aa63-11e6-8ec9-c94b9fe18a3c.jpg)
+![sort_threaded](https://cloud.githubusercontent.com/assets/4519686/20665224/07543dba-b55f-11e6-92b4-1387c1c45708.jpg)
 
