@@ -1,5 +1,5 @@
 # sortcomments
-Example module to change the sort order of comments in Drupal 8 using function hook_query_TAG_alter. This simple module provides sorting functionality for comments. It is possible to configure sort order (newer or older first) per comment field, using the "comment field configuration" in "manage fields and settings" for your content type.
+Example module to change the sort order of comments in Drupal 8 using function hook_query_TAG_alter. It is possible to configure sort order (newer or older first) per comment field, using the "comment field configuration" in "manage fields and settings" for your content type.
 
 Corresponding issue for Drupal 7:
 
